@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:sec="http://www.springframework.org/schema/security"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+    xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+    xsi:schemaLocation="
+      http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+      http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.2.xsd
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+      http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.0.xsd
+      http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+      http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+      http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<!-- declare again to scan annotation classes -->
+	<context:annotation-config />
+	<context:component-scan base-package="com.ywa" />
+	<mvc:annotation-driven/>
+	<mvc:default-servlet-handler/>
+	<task:annotation-driven/>
+
+	<!-- Datasource configuration -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	<beans:bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager"
+		p:entityManagerFactory-ref="entityManagerFactory">
+	</beans:bean>
+
+	<beans:bean id="hibernateJpaVendorAdapter"
+		class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+	</beans:bean>
+
+	<util:property-path id="sessionFactory"
+		path="entityManagerFactory.sessionFactory" />
+
+	<jpa:repositories base-package="com.ywa.repository"
+		transaction-manager-ref="transactionManager"
+		entity-manager-factory-ref="entityManagerFactory" />
+
+	<jdbc:embedded-database id="dataSource"/>
+	<beans:bean id="entityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="jpaVendorAdapter">
+			<beans:bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</beans:property>
+		<beans:property name="jpaProperties">
+			<beans:props>
+				<beans:prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</beans:prop>
+				<beans:prop key="hibernate.hbm2ddl.auto">create</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+	
+	<beans:bean id="initDataService" class="com.ywa.service.InitDataService" init-method="init"/>
+	
+	<beans:import resource="classpath:spring/security-config.xml"/>
+	
+</beans:beans>
